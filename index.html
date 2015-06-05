@@ -2,93 +2,17 @@
 <html>
     <head>
         <title>Psst</title>
+        <link rel="stylesheet/less" type="text/css" href="less/app.less">
+
         <script src="vendor/web3.js"></script>
-        <style>
-            html, body {
-                margin: 0;
-                padding: 0;
-                background-color: #15192D;
-                color: white;
-                font-family: monospace;
-                height: 100vh;
-                width: 100vw;
-            }
-
-            #server {
-                margin-bottom: 1em;
-            }
-
-            #channels,
-            #output, 
-            #input {
-                float: left;
-                box-sizing: border-box;
-            }
-
-            #channels {
-                width: 30vw;
-                height: 100vh;
-                margin: 0;
-                padding: 1em;
-                background-color: #0C0D18;
-                color: rgba( 255, 255, 255, 0.5);
-            }
-
-            #channels h1 {
-                color: white;
-            }
-            #channels > ul {
-                padding-left: 1em;
-            }
-            #channels > ul > li {
-                list-style: none;
-            }
-
-            .channelName:before {
-                content: "#";
-            }
-
-            .channelName.active {
-                color: white;
-            }
-
-            #currentChannel {
-                position: absolute;
-                top: 1em;
-                right: 1em;
-                color: rgba( 255, 255, 255, 0.5);
-            }
-
-            #output {
-                width: 70vw;
-                height: 80vh;
-                padding: 1em;
-            }
-
-            #input,
-            #input textarea {
-                height: 20vh;
-                width: 70vw;
-            }
-            
-            #input textarea {
-                float: left;
-                box-sizing: border-box;                
-                border: 0;
-                padding: 1em;
-            }
-
-
-            .message .sent {
-                color: rgba( 255,255,255,0.5);
-                margin-right: 1em;
-            }
-        </style>
+        <script src="vendor/underscore-min.js"></script>
+        <script src="vendor/jquery-2.1.4.min.js"></script>
+        <script src="vendor/backbone-min.js"></script>
+        <script src="vendor/backbone.marionette.min.js"></script>
+        <script src="vendor/less.min.js"></script>
+        <script src="vendor/coffee-script.js"></script>
     </head>
     <body>
-
-        
-
 
         <div id="chat">
             <div id="channels">
@@ -112,50 +36,74 @@
             </div>
         </div>
 
-        <script>
+        <script type="text/coffeescript">
 
-            var host = "localhost";
-            var port = 8545;
-            document.querySelector('#server .host').innerHTML = host;
-            document.querySelector('#server .port').innerHTML = port;
+            
 
-            var hostStatus = "Connecting..."
-            try {
-                endpoint = "http://" + host + ":" + port;
+            host = "localhost"
+            port = 8545
+            document.querySelector('#server .host').innerHTML = host
+            document.querySelector('#server .port').innerHTML = port
+
+            hostStatus = "Connecting..."
+            try
+                endpoint = "http://#{ host }:#{ port }"
                 httpProvider = new web3.providers.HttpProvider( endpoint )
                 web3.setProvider( httpProvider )
-            } catch (err) {
+            catch err
                 hostStatus = "Failed!"
-            }
             
-            try {
-                if (web3.eth.coinbase) hostStatus = "Connected";
-            } catch (err) {
-                hostStatus = "Failed!"   
-            }
+            try 
+                hostStatus = "Connected" if web3.eth.coinbase
+            catch err
+                hostStatus = "Failed!"
+
+
+            identity = localStorage.getItem( 'psstIdentity' )
+            unless identity
+                identity = web3.shh.newIdentity()
+                localStorage.setItem( 'psstIdentity', identity )
 
 
             document.querySelector('#server .status').innerHTML = hostStatus;
 
 
-            document.querySelector('#input textarea').onkeypress = function(ev) {
-                if (ev.keyCode == 13) {
-                    web3.shh.post({
-                        topics: ["psst"],
-                        payload: [ev.target.value],
+            document.querySelector('#input textarea').onkeypress = (ev) ->
+                if ev.keyCode is 13
+                    web3.shh.post
+                        topics: ["psst"]
+                        payload: [ev.target.value]
                         ttl: 100
-                    })
-                    ev.target.value = "";
-                }
-            }
+                        from: identity
+                    
+                    ev.target.value = ""
 
-            var psstFilter = web3.shh.filter( { topics: ["psst"] });
-            psstFilter.watch( function(err,resp){
-                console.log( resp );
-                var time = new Date(resp.sent);
-                document.querySelector('#output').innerHTML += "<div class='message'><span class='sent'>"+time.getHours()+":"+time.getMinutes()+"</span>"+resp.payload[0]+"</div>"
-            })
-            
+            messagesRegion = new Marionette.Region( el: $('#output') )
+
+            class MessageView extends Marionette.ItemView
+                className: 'message'
+                template: _.template """
+                    <span class="sent"><%- getTime() %></span>
+                    <span class="from"><%- from %></span>
+                    <span class="payload"><%- payload[0] %></span>
+                """
+
+                templateHelpers:
+                    getTime: ->
+                        time = new Date( @sent )
+                        "#{ time.getHours() }:#{ time.getMinutes() }"
+
+            class MessageCollectionView extends Marionette.CollectionView
+                childView: MessageView
+
+            psstFilter = web3.shh.filter( topics: ["psst"] )
+
+            collectionView = new MessageCollectionView( collection: new Backbone.Collection() )
+
+            messagesRegion.show( collectionView )
+
+            psstFilter.watch (err,resp) ->
+                collectionView.collection.add( resp )
 
         </script>
     </body>
