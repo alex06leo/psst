@@ -1,5 +1,7 @@
 # psst
 
+![psst](https://raw.githubusercontent.com/d11e9/psst/master/images/screenshot.png)
+
 p2p chat and messaging application using [Ethereum](http://github.com/ethereum)'s [Whisper](https://github.com/ethereum/wiki/wiki/Whisper) network and `shh` protocol.
 
 ## Getting started
