@@ -1,0 +1,51 @@
+
+@import 'colors';
+
+#overlay {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	left: 0;
+	background-color: rgba( 0,0,0,0.8 );
+
+	> * {
+		max-width: 80vw;
+		max-height: 60vh;
+		margin: 20vh auto;
+		background-color: @bg-color-mid;
+		padding: 1em;
+		box-sizing: border-box;
+		box-shadow: 0 0 1em #000;
+		overflow: auto;
+	}
+
+	.connection-view {
+		max-width: 25em;
+		padding: 2em;
+
+		.server {
+			background-color: @bg-color-dark;
+			padding: 1em;
+			margin-bottom: 1em;
+			cursor: pointer;
+
+			&.selected {
+				background-color: orange;
+			}
+		}
+
+		.row,
+		button {
+			display: block;
+		}
+
+		button {
+			cursor: pointer;
+			border: 0 none;
+			padding: 1em;
+			background-color: @bg-color-dark;
+			color: @text-color-light;
+		}
+	}
+}

@@ -14,6 +14,8 @@
     </head>
     <body>
 
+	<div id="overlay"></div>
+
         <div id="chat">
             <div id="channels">
                 <h1>Psst</h1>
@@ -38,47 +40,44 @@
 
         <script type="text/coffeescript">
 
-            
 
-            host = "localhost"
-            port = 8545
-            document.querySelector('#server .host').innerHTML = host
-            document.querySelector('#server .port').innerHTML = port
+	    class ConnectionView extends Marionette.ItemView
+		className: 'connection-view'
+		template: _.template """
+		    <p>Select a Whisper capable Ethereum node to connect to:</p>
+		    <div class="server selected">
+			<div class="row">
+			    Host: <span class="host">localhost</span>
+			</div>
+			<div class="row">
+			    Port: <span class="port">8545</span>
+			</div>
+		    </div>
+		    <div class="server">
+			<div class="row">
+			    Host: <input class="host" type="text" value="eth.datagotchi.com" />
+			</div>
+			<div class="row">
+			    Port: <input class="port" type="number" value="80" />
+			</div>
+		    </div>
+		    <button class="connect">Connect</button>
+		"""
+		events:
+		    'click .server': '_handleSelectServer'
+		    'click button.connect': '_handleClickConnect'
 
-            hostStatus = "Connecting..."
-            try
-                endpoint = "http://#{ host }:#{ port }"
-                httpProvider = new web3.providers.HttpProvider( endpoint )
-                web3.setProvider( httpProvider )
-            catch err
-                hostStatus = "Failed!"
-            
-            try 
-                hostStatus = "Connected" if web3.eth.coinbase
-            catch err
-                hostStatus = "Failed!"
+		_handleClickConnect: ->
+		    host = @$('.server.selected .host').val?() or $('.server.selected .host').text()
+		    port = @$('.server.selected .port').val?() or $('.server.selected .port').text()
+		    @listenToOnce( new Connection( {host, port} ), 'connected', @_handleConnected )
 
+		_handleSelectServer: (ev) ->
+		    @$( '.server' ).removeClass('selected')
+		    @$( ev.target ).closest('.server').addClass('selected')
 
-            identity = localStorage.getItem( 'psstIdentity' )
-            unless identity
-                identity = web3.shh.newIdentity()
-                localStorage.setItem( 'psstIdentity', identity )
-
-
-            document.querySelector('#server .status').innerHTML = hostStatus;
-
-
-            document.querySelector('#input textarea').onkeypress = (ev) ->
-                if ev.keyCode is 13
-                    web3.shh.post
-                        topics: ["psst"]
-                        payload: [ev.target.value]
-                        ttl: 100
-                        from: identity
-                    
-                    ev.target.value = ""
-
-            messagesRegion = new Marionette.Region( el: $('#output') )
+		_handleConnected: ->
+		    @close()
 
             class MessageView extends Marionette.ItemView
                 className: 'message'
@@ -96,14 +95,56 @@
             class MessageCollectionView extends Marionette.CollectionView
                 childView: MessageView
 
-            psstFilter = web3.shh.filter( topics: ["psst"] )
 
-            collectionView = new MessageCollectionView( collection: new Backbone.Collection() )
+	    overlayRegion = new Marionette.Region( el: $('#overlay')[0] )
+	    overlayRegion.show( new ConnectionView() )
 
-            messagesRegion.show( collectionView )
+	    class Connection
+		constructor: ({@host, @port}) ->
+		    document.querySelector('#server .host').innerHTML = @host
+		    document.querySelector('#server .port').innerHTML = @port
 
-            psstFilter.watch (err,resp) ->
-                collectionView.collection.add( resp )
+		    hostStatus = "Connecting..."
+		    try
+			endpoint = "http://#{ @host }:#{ @port }"
+			httpProvider = new web3.providers.HttpProvider( endpoint )
+			web3.setProvider( httpProvider )
+		    catch err
+			hostStatus = "Failed!"
+
+		    try
+			hostStatus = "Connected" if web3.eth.coinbase
+		    catch err
+			hostStatus = "Failed!"
+
+		    identity = localStorage.getItem( 'psstIdentity' )
+		    unless identity
+			identity = web3.shh.newIdentity()
+			localStorage.setItem( 'psstIdentity', identity )
+
+
+		    document.querySelector('#server .status').innerHTML = hostStatus
+
+
+		    document.querySelector('#input textarea').onkeypress = (ev) ->
+			if ev.keyCode is 13
+			    web3.shh.post
+				topics: ["psst"]
+				payload: [ev.target.value]
+				ttl: 100
+				from: identity
+
+			    ev.target.value = ""
+
+		    messagesRegion = new Marionette.Region( el: $('#output') )
+		    psstFilter = web3.shh.filter( topics: ["psst"] )
+
+		    collectionView = new MessageCollectionView( collection: new Backbone.Collection() )
+
+		    messagesRegion.show( collectionView )
+
+		    psstFilter.watch (err,resp) ->
+			collectionView.collection.add( resp )
 
         </script>
     </body>
