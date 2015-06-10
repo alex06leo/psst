@@ -4,9 +4,9 @@
 #overlay {
 	position: absolute;
 	top: 0;
-	bottom: 0;
 	right: 0;
 	left: 0;
+	height: 100vh;
 	background-color: rgba( 0,0,0,0.8 );
 
 	> * {
@@ -20,6 +20,10 @@
 		overflow: auto;
 	}
 
+	&:empty {
+		height: 0vh;
+	}
+
 	.connection-view {
 		max-width: 25em;
 		padding: 2em;
@@ -31,7 +35,7 @@
 			cursor: pointer;
 
 			&.selected {
-				background-color: orange;
+				background-color: @text-color-selected;
 			}
 		}
 

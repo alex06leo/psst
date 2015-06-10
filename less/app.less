@@ -2,7 +2,9 @@
 @import 'overlay';
 @import 'colors';
 
-html, body {
+@import 'channels';
+
+html, body, .app-view {
     margin: 0;
     padding: 0;
     background-color: @bg-color-mid;
@@ -57,19 +59,26 @@ html, body {
     color: rgba( 255, 255, 255, 0.5);
 }
 
-#output {
+#output-region {
     width: 70vw;
     height: 80vh;
     padding: 1em;
+    box-sizing: border-box;
+    float: left;
 }
 
-#input,
-#input textarea {
+#input-region {
+    float: left;
+}
+
+#input-region,
+#input-region .input-view,
+#input-region textarea {
     height: 20vh;
     width: 70vw;
 }
 
-#input textarea {
+#input-region textarea {
     float: left;
     box-sizing: border-box;                
     border: 0;
@@ -77,7 +86,7 @@ html, body {
 }
 
 
-.message {
+.message-view {
     .sent {
         color: rgba( 255,255,255,0.5);
         margin-right: 1em;

@@ -1,0 +1,29 @@
+
+@import 'colors';
+
+.channels-view {
+	padding: 0;
+
+	.channel-item-view {
+		list-style: none;
+		cursor: pointer;
+
+		.leave-channel { display: none; }
+
+		&.joined {
+			color: @text-color-selected;
+
+			.join-channel { display: none; }
+			.leave-channel { display: inline; }
+		}
+
+		button {
+			border: 0 none;
+			background-color: transparent;
+			color: @text-color-selected;
+			font-weight: bold;
+			cursor: pointer;
+		}
+	}
+	
+}
