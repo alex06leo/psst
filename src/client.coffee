@@ -208,12 +208,17 @@ class AppView extends Marionette.LayoutView
 
     _handleConnected: ->
         @overlayRegion.empty()
-        @channelsView = new ChannelsView
-            identity: web3.shh.newIdentity()
-            outputRegion: @outputRegion
-            collection: new Channels([new Channel( name: 'd11e9' )])
-            inputRegion: @inputRegion
-        @channelsRegion.show( @channelsView )
+        web3.shh.newIdentity (err, identity) =>
+            if err
+                alert(err.message)
+                return
+
+            @channelsView = new ChannelsView
+                identity: identity
+                outputRegion: @outputRegion
+                collection: new Channels([new Channel( name: 'general' ),new Channel( name: 'dev' )])
+                inputRegion: @inputRegion
+            @channelsRegion.show( @channelsView )
 
     _handleCreateChannel: (ev) =>
         return unless ev.keyCode is 13
@@ -238,12 +243,16 @@ class Connection extends Backbone.Model
         catch err
             hostStatus = "Failed!"
 
-        try
-            hostStatus = "Connected" if web3.eth.coinbase
-            console.log "Connected!!!"
-            @trigger('connected')
-        catch err
-            hostStatus = "Failed!"
+
+        web3.eth.getCoinbase (err, coinbase) =>
+            if err
+                hostStatus = "Failed!"
+            else
+                hostStatus = "Connected"
+                console.log "Connected!!!"
+                @trigger('connected')
+            document.querySelector('#server .status').innerHTML = hostStatus
+
 
         document.querySelector('#server .status').innerHTML = hostStatus
 
