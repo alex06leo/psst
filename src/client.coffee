@@ -3,20 +3,12 @@ class ConnectionView extends Marionette.ItemView
     template: _.template """
         <p>Select a Whisper capable Ethereum node to connect to:</p>
         <div class="server selected">
-        <div class="row">
-            Host: <span class="host">localhost</span>
-        </div>
-        <div class="row">
-            Port: <span class="port">8545</span>
-        </div>
-        </div>
-        <div class="server">
-        <div class="row">
-            Host: <input class="host" type="text" value="eth.datagotchi.com" />
-        </div>
-        <div class="row">
-            Port: <input class="port" type="number" value="80" />
-        </div>
+	    <div class="row">
+		Host: <input class="host" type="text" value="http://localhost" />
+	    </div>
+	    <div class="row">
+		Port: <input class="port" type="number" value="8545" />
+	    </div>
         </div>
         <button class="connect">Connect</button>
     """
@@ -212,13 +204,13 @@ class AppView extends Marionette.LayoutView
             if err
                 alert(err.message)
                 return
-
             @channelsView = new ChannelsView
                 identity: identity
                 outputRegion: @outputRegion
-                collection: new Channels([new Channel( name: 'general' ),new Channel( name: 'dev' )])
+                collection: new Channels([new Channel( name: 'general' )])
                 inputRegion: @inputRegion
             @channelsRegion.show( @channelsView )
+
 
     _handleCreateChannel: (ev) =>
         return unless ev.keyCode is 13
@@ -237,7 +229,7 @@ class Connection extends Backbone.Model
 
         hostStatus = "Connecting..."
         try
-            endpoint = "http://#{ @host }:#{ @port }"
+	    endpoint = "#{ @host }:#{ @port }"
             httpProvider = new web3.providers.HttpProvider( endpoint )
             web3.setProvider( httpProvider )
         catch err
