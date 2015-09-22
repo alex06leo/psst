@@ -41,8 +41,10 @@ class MessageView extends Marionette.ItemView
 
     templateHelpers:
         getTime: ->
-            time = new Date( @sent )
-            "#{ time.getHours() }:#{ time.getMinutes() }"
+            time = new Date( @sent * 1000 )
+            hours = if time.getHours() < 10 then "0#{time.getHours()}" else time.getHours()
+            mins = if time.getMinutes() < 10 then "0#{time.getMinutes()}" else time.getMinutes()
+            "#{ hours }:#{ mins }"
 
 class MessagesCollectionView extends Marionette.CollectionView
     className: 'messages-view'
