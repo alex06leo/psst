@@ -3,12 +3,12 @@ class ConnectionView extends Marionette.ItemView
     template: _.template """
         <p>Select a Whisper capable Ethereum node to connect to:</p>
         <div class="server selected">
-	    <div class="row">
-		Host: <input class="host" type="text" value="http://localhost" />
-	    </div>
-	    <div class="row">
-		Port: <input class="port" type="number" value="8545" />
-	    </div>
+        <div class="row">
+        Host: <input class="host" type="text" value="http://localhost" />
+        </div>
+        <div class="row">
+        Port: <input class="port" type="number" value="8545" />
+        </div>
         </div>
         <button class="connect">Connect</button>
     """
@@ -85,8 +85,11 @@ class ChannelsChannel extends Channel
 
     _handleNewMessage: (err,resp) =>
         return unless resp?.payload[0]
-        console.log( 'Channel discovered: #', resp?.payload[0] )
-        @collection.add( new Channel( { name: resp?.payload[0] } ) )
+        name = resp.payload[0];
+        unless @collection.findWhere({ name: name })
+
+            console.log( "Channel discovered: ##{name}", @collection )
+            @collection.add( new Channel( { name: name } ) )
         
 
 
@@ -229,7 +232,7 @@ class Connection extends Backbone.Model
 
         hostStatus = "Connecting..."
         try
-	    endpoint = "#{ @host }:#{ @port }"
+            endpoint = "#{ @host }:#{ @port }"
             httpProvider = new web3.providers.HttpProvider( endpoint )
             web3.setProvider( httpProvider )
         catch err

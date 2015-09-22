@@ -32,6 +32,7 @@ html, body, .app-view {
     padding: 1em;
     background-color: @bg-color-dark;
     color: rgba( 255, 255, 255, 0.5);
+    overflow-wrap: break-word;
 }
 
 #channels h1 {
@@ -50,6 +51,10 @@ html, body, .app-view {
 
 .channelName.active {
     color: white;
+}
+
+.create-channel {
+    max-width: 100%;
 }
 
 #currentChannel {
